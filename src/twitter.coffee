@@ -6,7 +6,7 @@ oauth        = require('oauth')
 
 class Twitter extends Adapter
  send: (user, strings...) ->
-   console.log "Sending strings to user: " + user
+   console.log "Sending strings to user: ", user
    strings.forEach (str) =>
      text = str
      console.log text
@@ -32,6 +32,7 @@ class Twitter extends Adapter
     token       : process.env.HUBOT_TWITTER_TOKEN
     tokensecret : process.env.HUBOT_TWITTER_TOKEN_SECRET
    bot = new TwitterStreaming(options)
+   self.emit("connected")
 
    bot.tweet self.robot.name, (data, err) ->
      reg = new RegExp('@'+self.robot.name,'i')
@@ -71,12 +72,13 @@ class TwitterStreaming extends EventEmitter
  tweet: (track,callback) ->
    @post "/1/statuses/filter.json?track=#{track}", '', callback
 
- send : (user,tweetText) ->
-        console.log "send twitt to #{user} with text #{tweetText}"
-        @consumer.post "https://api.twitter.com/1/statuses/update.json", @token, @tokensecret, { status: "@#{user} #{tweetText}" },'UTF-8',  (error, data, response) ->
-          if error
-            console.log "twitter send error: #{error} #{data}"
-          console.log "Status #{response.statusCode}"
+ send: (user,tweetText) ->
+   user = user.user
+   console.log "send twitt to #{user} with text #{tweetText}"
+   @consumer.post "https://api.twitter.com/1/statuses/update.json", @token, @tokensecret, { status: "@#{user} #{tweetText}" },'UTF-8',  (error, data, response) ->
+     if error
+       console.log "twitter send error: #{error} #{data}"
+       console.log "Status #{response.statusCode}"
 
 
  # Convenience HTTP Methods for posting on behalf of the token"d user
